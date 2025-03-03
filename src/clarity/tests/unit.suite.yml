@@ -1,0 +1,5 @@
+suite_namespace: framework\clarity\tests\unit
+actor: UnitTester
+modules:
+  enabled:
+    - Asserts

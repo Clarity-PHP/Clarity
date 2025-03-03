@@ -1,0 +1,30 @@
+{
+    "name": "efko-clarity/clarity",
+    "description": "Легковесный PHP Фреймворк",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "framework\\clarity\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Лёвин Алексей Дмитриевич",
+            "email": "a.lyovin@efko.ru"
+        },
+        {
+            "name": "Дымов Артем Игоревич",
+            "email": "a.dymov@efko.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.4",
+        "codeception/codeception": "^5.1",
+        "codeception/module-phpbrowser": "*",
+        "codeception/module-asserts": "*",
+        "ext-pcntl": "*",
+        "ext-posix": "*"
+    }
+}
