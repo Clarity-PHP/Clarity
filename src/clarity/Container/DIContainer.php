@@ -15,7 +15,7 @@ use ReflectionType;
 
 class DIContainer implements ContainerInterface
 {
-    private static ?framework\clarity\Container\DIContainer $instance = null;
+    private static ?DIContainer $instance = null;
     private array $services = [];
 
     protected function __construct(private array $config = []) {}
