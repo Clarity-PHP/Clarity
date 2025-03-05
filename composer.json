@@ -1,5 +1,5 @@
 {
-    "name": "efko-clarity/clarity",
+    "name": "clarity/framework",
     "description": "Легковесный PHP Фреймворк",
     "type": "library",
     "license": "MIT",
