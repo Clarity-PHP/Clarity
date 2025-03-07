@@ -21,9 +21,9 @@ class Alias
 
             $parentAlias = strtok($subAlias, '/');
 
-            if (isset(framework\clarity\Helpers\Alias::$aliases[$parentAlias]) === true) {
+            if (isset(Alias::$aliases[$parentAlias]) === true) {
 
-                $parentPath= framework\clarity\Helpers\Alias::$aliases[$parentAlias];
+                $parentPath= Alias::$aliases[$parentAlias];
 
                 $path = $parentPath . self::normalizeAlias(str_replace([$parentAlias, '//'], '', ltrim($subAlias, '/')));
             }

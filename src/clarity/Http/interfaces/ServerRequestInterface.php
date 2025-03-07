@@ -18,9 +18,9 @@ interface ServerRequestInterface extends RequestInterface
 
     /**
      * @param array $cookies
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withCookieParams(array $cookies): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withCookieParams(array $cookies): ServerRequestInterface;
 
     /**
      * @return array
@@ -29,9 +29,9 @@ interface ServerRequestInterface extends RequestInterface
 
     /**
      * @param array $query
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withQueryParams(array $query): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withQueryParams(array $query): ServerRequestInterface;
 
     /**
      * @return array
@@ -40,9 +40,9 @@ interface ServerRequestInterface extends RequestInterface
 
     /**
      * @param array $uploadedFiles
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withUploadedFiles(array $uploadedFiles): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withUploadedFiles(array $uploadedFiles): ServerRequestInterface;
 
     /**
      * @return array|object|null
@@ -51,9 +51,9 @@ interface ServerRequestInterface extends RequestInterface
 
     /**
      * @param array|object|null $data
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withParsedBody(null|array|object $data): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withParsedBody(null|array|object $data): ServerRequestInterface;
 
     /**
      * @return array
@@ -63,22 +63,22 @@ interface ServerRequestInterface extends RequestInterface
     /**
      * @param string $name
      * @param mixed|null $default
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function getAttribute(string $name, mixed $default = null): ?framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function getAttribute(string $name, mixed $default = null): ?ServerRequestInterface;
 
     /**
      * @param string $name
      * @param mixed $value
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withAttribute(string $name, mixed $value): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withAttribute(string $name, mixed $value): ServerRequestInterface;
 
     /**
      * @param string $name
-     * @return framework\clarity\Http\interfaces\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    public function withoutAttribute(string $name): framework\clarity\Http\interfaces\ServerRequestInterface;
+    public function withoutAttribute(string $name): ServerRequestInterface;
 
     /**
      * @return bool

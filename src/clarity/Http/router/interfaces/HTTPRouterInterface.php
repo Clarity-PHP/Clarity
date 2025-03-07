@@ -100,7 +100,7 @@ interface HTTPRouterInterface
      * @return mixed
      * @throws HttpNotFoundException если маршрут не зарегистрирован в конфигурации машрутов
      */
-    public function dispatch(framework\clarity\Http\interfaces\ServerRequestInterface $request): mixed;
+    public function dispatch(ServerRequestInterface $request): mixed;
 
     /**
      * @param array $config

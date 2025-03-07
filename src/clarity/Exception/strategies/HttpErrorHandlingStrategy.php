@@ -2,13 +2,13 @@
 
 namespace framework\clarity\Exception\strategies;
 
-use framework\clarity\Container\interfaces\ContainerInterface;
-use framework\clarity\Container\interfaces\ParameterStorageInterface;
 use framework\clarity\Exception\ErrorRendererContext;
 use framework\clarity\Exception\interfaces\ErrorHandlingStrategyInterface;
 use framework\clarity\Http\interfaces\ResponseInterface;
 use framework\clarity\Http\interfaces\ServerRequestInterface;
 use framework\clarity\view\interfaces\ViewRendererInterface;
+use framework\clarity\Container\interfaces\ContainerInterface;
+use framework\clarity\Container\interfaces\ParameterStorageInterface;
 use Throwable;
 
 readonly class HttpErrorHandlingStrategy implements ErrorHandlingStrategyInterface

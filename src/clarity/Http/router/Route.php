@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace framework\clarity\Http\router;
 
 use framework\clarity\Container\interfaces\ContainerInterface;
-use framework\clarity\Http\router\interfaces\MiddlewareAssignable;
-use framework\clarity\Http\router\interfaces\MiddlewareInterface;
 use framework\clarity\Http\router\interfaces\RouteInterface;
+use framework\clarity\http\router\interfaces\MiddlewareAssignable;
+use framework\clarity\http\router\interfaces\MiddlewareInterface;
 use InvalidArgumentException;
 
 class Route implements RouteInterface, MiddlewareAssignable

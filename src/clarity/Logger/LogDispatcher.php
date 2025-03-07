@@ -2,10 +2,14 @@
 
 namespace framework\clarity\Logger;
 
+use framework\clarity\ComponentManager\interfaces\ComponentInterface;
 use framework\clarity\Container\DIContainer;
 use framework\clarity\Container\interfaces\ContainerInterface;
 use framework\clarity\EventDispatcher\interfaces\EventDispatcherInterface;
 use framework\clarity\EventDispatcher\interfaces\ObserverFactoryInterface;
+use framework\clarity\EventDispatcher\interfaces\ObserverInterface;
+use framework\clarity\EventDispatcher\Message;
+use framework\clarity\Http\ServerRequest;
 use framework\clarity\Logger\interfaces\LoggerInterface;
 use framework\clarity\Logger\observers\ContextObserver;
 use RuntimeException;

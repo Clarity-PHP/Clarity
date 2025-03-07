@@ -11,6 +11,5 @@ interface HttpKernelInterface extends KernelInterface
      * @param ServerRequestInterface $request
      * @return ResponseInterface
      */
-    public function handle(
-        framework\clarity\Http\interfaces\ServerRequestInterface $request): framework\clarity\Http\interfaces\ResponseInterface;
+    public function handle(ServerRequestInterface $request): ResponseInterface;
 }

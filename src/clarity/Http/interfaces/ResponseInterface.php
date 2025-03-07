@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace framework\clarity\Http\interfaces;
 
+use framework\clarity\Http\Response;
+
 interface ResponseInterface extends MessageInterface
 {
     /**
@@ -14,9 +16,9 @@ interface ResponseInterface extends MessageInterface
     /**
      * @param int $code
      * @param string $reasonPhrase
-     * @return framework\clarity\Http\interfaces\ResponseInterface
+     * @return ResponseInterface
      */
-    public function withStatus(int $code, string $reasonPhrase = ''): framework\clarity\Http\interfaces\ResponseInterface;
+    public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface;
 
     /**
      * @return string

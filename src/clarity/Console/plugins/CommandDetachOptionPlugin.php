@@ -6,6 +6,7 @@ namespace framework\clarity\Console\plugins;
 
 use framework\clarity\Console\contracts\ConsoleInputInterface;
 use framework\clarity\Console\contracts\ConsoleInputPluginInterface;
+use framework\clarity\Console\contracts\ConsoleKernelInterface;
 use framework\clarity\Console\contracts\ConsoleOutputInterface;
 use framework\clarity\Console\enums\ConsoleEventsEnum;
 use framework\clarity\EventDispatcher\interfaces\EventDispatcherInterface;

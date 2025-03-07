@@ -3,6 +3,7 @@
 namespace framework\clarity\Exception\interfaces;
 
 use framework\clarity\Exception\ErrorRendererContext;
+use Throwable;
 
 interface ErrorRenderInterface
 {

@@ -39,7 +39,7 @@ class Request extends Message implements RequestInterface
      * @param string $method
      * @return $this
      */
-    public function withMethod(string $method): framework\clarity\Http\Request
+    public function withMethod(string $method): Request
     {
         $newRequest = clone $this;
 
@@ -61,7 +61,7 @@ class Request extends Message implements RequestInterface
      * @param bool $preserveHost
      * @return $this
      */
-    public function withUri(UriInterface $uri, bool $preserveHost = false): framework\clarity\Http\Request
+    public function withUri(UriInterface $uri, bool $preserveHost = false): Request
     {
         $clone = clone $this;
         $clone->uri = $uri;
@@ -96,7 +96,7 @@ class Request extends Message implements RequestInterface
      * @param mixed $requestTarget
      * @return $this
      */
-    public function withRequestTarget(mixed $requestTarget): framework\clarity\Http\Request
+    public function withRequestTarget(mixed $requestTarget): Request
     {
         $newRequest = clone $this;
 
