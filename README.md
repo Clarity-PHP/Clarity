@@ -16,4 +16,4 @@
 
 ```bash
 
-composer require efko-clarity/clarity
+composer require clarity-php/framework
