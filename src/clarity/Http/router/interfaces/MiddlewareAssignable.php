@@ -12,5 +12,5 @@ interface MiddlewareAssignable
      * @param  callable|string $middleware коллбек функция или неймспейс класса мидлвеера
      * @return void
      */
-    public function addMiddleware(callable|string $middleware): framework\clarity\Http\router\interfaces\MiddlewareAssignable;
+    public function addMiddleware(callable|string $middleware): MiddlewareAssignable;
 }

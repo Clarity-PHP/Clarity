@@ -16,9 +16,9 @@ interface MessageInterface
 
     /**
      * @param string $version
-     * @return framework\clarity\Http\interfaces\MessageInterface
+     * @return MessageInterface
      */
-    public function withProtocolVersion(string $version): framework\clarity\Http\interfaces\MessageInterface;
+    public function withProtocolVersion(string $version): MessageInterface;
 
     /**
      * @return array
@@ -46,24 +46,24 @@ interface MessageInterface
     /**
      * @param string $header
      * @param string|array $value
-     * @return framework\clarity\Http\interfaces\MessageInterface
+     * @return MessageInterface
      * @throws InvalidArgumentException
      */
-    public function withHeader(string $header, string|array $value): framework\clarity\Http\interfaces\MessageInterface;
+    public function withHeader(string $header, string|array $value): MessageInterface;
 
     /**
      * @param string $header
      * @param string|array $value
-     * @return framework\clarity\Http\interfaces\MessageInterface
+     * @return MessageInterface
      * @throws InvalidArgumentException
      */
-    public function withAddedHeader(string $header, string|array $value): framework\clarity\Http\interfaces\MessageInterface;
+    public function withAddedHeader(string $header, string|array $value): MessageInterface;
 
     /**
      * @param string $header
-     * @return framework\clarity\Http\interfaces\MessageInterface
+     * @return MessageInterface
      */
-    public function withoutHeader(string $header): framework\clarity\Http\interfaces\MessageInterface;
+    public function withoutHeader(string $header): MessageInterface;
 
     /**
      * @return StreamInterface
@@ -74,5 +74,5 @@ interface MessageInterface
      * @param StreamInterface $body
      * @return Message
      */
-    public function withBody(StreamInterface $body): framework\clarity\Http\interfaces\MessageInterface;
+    public function withBody(StreamInterface $body): MessageInterface;
 }

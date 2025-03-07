@@ -119,7 +119,7 @@ class Uri implements UriInterface
      * @param string $scheme
      * @return $this
      */
-    public function withScheme(string $scheme): framework\clarity\Http\Uri
+    public function withScheme(string $scheme): Uri
     {
         $newUri = clone $this;
 
@@ -134,7 +134,7 @@ class Uri implements UriInterface
      * @param string $password
      * @return $this
      */
-    public function withUserInfo(string $user, string $password): framework\clarity\Http\Uri
+    public function withUserInfo(string $user, string $password): Uri
     {
         $newUri = clone $this;
 
@@ -148,7 +148,7 @@ class Uri implements UriInterface
      * @param string $host
      * @return $this
      */
-    public function withHost(string $host): framework\clarity\Http\Uri
+    public function withHost(string $host): Uri
     {
         $newUri = clone $this;
 
@@ -161,7 +161,7 @@ class Uri implements UriInterface
      * @param int $port
      * @return $this
      */
-    public function withPort(int $port): framework\clarity\Http\Uri
+    public function withPort(int $port): Uri
     {
         if ($port < 1 || $port > 65535) {
             throw new InvalidArgumentException("Invalid port number: $port");
@@ -178,7 +178,7 @@ class Uri implements UriInterface
      * @param $path
      * @return $this
      */
-    public function withPath($path): framework\clarity\Http\Uri
+    public function withPath($path): Uri
     {
         $newUri = clone $this;
 
@@ -191,7 +191,7 @@ class Uri implements UriInterface
      * @param $query
      * @return $this
      */
-    public function withQuery($query): framework\clarity\Http\Uri
+    public function withQuery($query): Uri
     {
         $newUri = clone $this;
 
@@ -204,7 +204,7 @@ class Uri implements UriInterface
      * @param string $fragment
      * @return $this
      */
-    public function withFragment(string $fragment): framework\clarity\Http\Uri
+    public function withFragment(string $fragment): Uri
     {
         $newUri = clone $this;
 

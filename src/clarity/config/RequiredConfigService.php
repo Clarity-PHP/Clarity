@@ -56,7 +56,7 @@ readonly class RequiredConfigService
 
         Alias::set('@web', $this->paramStorage->get('kernel.public_dir'));
 
-        Alias::set('@views', RequiredConfigService . phpAlias::get('@app') . DIRECTORY_SEPARATOR . 'views');
+        Alias::set('@views', Alias::get('@app') . DIRECTORY_SEPARATOR . 'views');
 
         if (isset($this->config['aliases']) === true) {
             foreach ($this->config['aliases'] as $alias => $path) {

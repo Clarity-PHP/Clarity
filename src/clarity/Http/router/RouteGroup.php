@@ -6,8 +6,8 @@ namespace framework\clarity\Http\router;
 
 use framework\clarity\Container\interfaces\ContainerInterface;
 use framework\clarity\Http\router\interfaces\HTTPRouterInterface;
-use framework\clarity\Http\router\interfaces\MiddlewareAssignable;
-use framework\clarity\Http\router\interfaces\MiddlewareInterface;
+use framework\clarity\http\router\interfaces\MiddlewareAssignable;
+use framework\clarity\http\router\interfaces\MiddlewareInterface;
 use InvalidArgumentException;
 
 class RouteGroup implements MiddlewareAssignable

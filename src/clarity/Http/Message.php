@@ -43,7 +43,7 @@ class Message implements MessageInterface
      * @param string $version
      * @return $this
      */
-    public function withProtocolVersion(string $version): framework\clarity\Http\Message
+    public function withProtocolVersion(string $version): Message
     {
         $messageInstance  = clone $this;
 
@@ -105,7 +105,7 @@ class Message implements MessageInterface
      * @param string|array $value
      * @return $this
      */
-    public function withHeader(string $header, string|array $value): framework\clarity\Http\Message
+    public function withHeader(string $header, string|array $value): Message
     {
         $messageInstance = clone $this;
 
@@ -119,7 +119,7 @@ class Message implements MessageInterface
      * @param string|array $value
      * @return $this
      */
-    public function withAddedHeader(string $header, string|array $value): framework\clarity\Http\Message
+    public function withAddedHeader(string $header, string|array $value): Message
     {
         $messageInstance = clone $this;
 
@@ -132,7 +132,7 @@ class Message implements MessageInterface
      * @param string $header
      * @return $this
      */
-    public function withoutHeader(string $header): framework\clarity\Http\Message
+    public function withoutHeader(string $header): Message
     {
         $header = strtolower($header);
 
@@ -175,7 +175,7 @@ class Message implements MessageInterface
      * @param StreamInterface $body
      * @return $this
      */
-    public function withBody(StreamInterface $body): framework\clarity\Http\Message
+    public function withBody(StreamInterface $body): Message
     {
         $messageInstance = clone $this;
 

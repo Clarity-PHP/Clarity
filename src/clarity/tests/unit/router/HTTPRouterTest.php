@@ -9,7 +9,9 @@ use framework\clarity\Container\interfaces\ContainerInterface;
 use framework\clarity\Http\interfaces\ServerRequestInterface;
 use framework\clarity\Http\interfaces\UriInterface;
 use framework\clarity\Http\router\exceptions\HttpNotFoundException;
+use framework\clarity\Http\router\HTTPRouter;
 use framework\clarity\Http\router\interfaces\MiddlewareInterface;
+use framework\clarity\Http\router\Route;
 use framework\clarity\tests\unit\router\helpers\DeleteDirectoryForTestingHelper;
 use framework\clarity\tests\unit\router\mocks\CalculatorControllerMock;
 use framework\clarity\tests\unit\router\mocks\HTTPMiddlewareMock;
@@ -22,7 +24,7 @@ use ReflectionMethod;
 class HTTPRouterTest extends Unit
 {
     protected ContainerInterface $containerMock;
-    protected framework\clarity\Http\router\HTTPRouter $router;
+    protected HTTPRouter $router;
     private DeleteDirectoryForTestingHelper $deleteDirectoryForTestingHelper;
 
     /**
@@ -41,7 +43,7 @@ class HTTPRouterTest extends Unit
 
         $this->containerMock = $this->createMock(ContainerInterface::class);
         $this->request = $this->createMock(ServerRequestInterface::class);
-        $this->router = new framework\clarity\Http\router\HTTPRouter($this->containerMock);
+        $this->router = new HTTPRouter($this->containerMock);
     }
 
     /**
@@ -55,10 +57,10 @@ class HTTPRouterTest extends Unit
         $this->assertArrayHasKey('/test', $this->router->routes['GET']);
 
         $addedRoute = $this->router->routes['GET']['/test'];
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
 
         $this->assertEquals('/test', $addedRoute->getPath());
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
         $this->assertEquals('GET', $addedRoute->getMethod());
     }
 
@@ -73,10 +75,10 @@ class HTTPRouterTest extends Unit
         $this->assertArrayHasKey('/test', $this->router->routes['POST']);
 
         $addedRoute = $this->router->routes['POST']['/test'];
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
 
         $this->assertEquals('/test', $addedRoute->getPath());
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
         $this->assertEquals('POST', $addedRoute->getMethod());
     }
 
@@ -91,10 +93,10 @@ class HTTPRouterTest extends Unit
         $this->assertArrayHasKey('/test', $this->router->routes['PUT']);
 
         $addedRoute = $this->router->routes['PUT']['/test'];
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
 
         $this->assertEquals('/test', $addedRoute->getPath());
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
         $this->assertEquals('PUT', $addedRoute->getMethod());
     }
 
@@ -109,10 +111,10 @@ class HTTPRouterTest extends Unit
         $this->assertArrayHasKey('/test', $this->router->routes['PATCH']);
 
         $addedRoute = $this->router->routes['PATCH']['/test'];
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
 
         $this->assertEquals('/test', $addedRoute->getPath());
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
         $this->assertEquals('PATCH', $addedRoute->getMethod());
     }
 
@@ -127,10 +129,10 @@ class HTTPRouterTest extends Unit
         $this->assertArrayHasKey('/test', $this->router->routes['DELETE']);
 
         $addedRoute = $this->router->routes['DELETE']['/test'];
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
 
         $this->assertEquals('/test', $addedRoute->getPath());
-        $this->assertInstanceOf(framework\clarity\Http\router\Route::class, $addedRoute);
+        $this->assertInstanceOf(Route::class, $addedRoute);
         $this->assertEquals('DELETE', $addedRoute->getMethod());
     }
 
@@ -292,7 +294,7 @@ class HTTPRouterTest extends Unit
     {
         $route = '/user/{id}';
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'prepareParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'prepareParams');
 
         $params = $reflection->invoke($this->router, $route);
 
@@ -310,7 +312,7 @@ class HTTPRouterTest extends Unit
     {
         $route = '/user/{?id}';
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'prepareParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'prepareParams');
 
         $params = $reflection->invoke($this->router, $route);
 
@@ -328,7 +330,7 @@ class HTTPRouterTest extends Unit
     {
         $route = '/user/{id=42}';
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'prepareParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'prepareParams');
 
         $params = $reflection->invoke($this->router, $route);
 
@@ -346,7 +348,7 @@ class HTTPRouterTest extends Unit
     {
         $route = '/user/{?id=42}';
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'prepareParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'prepareParams');
 
         $params = $reflection->invoke($this->router, $route);
 
@@ -372,7 +374,7 @@ class HTTPRouterTest extends Unit
             'name' => 'John'
         ];
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'mapParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'mapParams');
 
         $result = $reflection->invoke($this->router, $queryParams, $params);
 
@@ -396,7 +398,7 @@ class HTTPRouterTest extends Unit
             'name' => 'Alice'
         ];
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'mapParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'mapParams');
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Обязательный параметр id не найден в запросе');
@@ -419,7 +421,7 @@ class HTTPRouterTest extends Unit
             'id' => 123
         ];
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'mapParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'mapParams');
 
         $result = $reflection->invoke($this->router, $queryParams, $params);
 
@@ -445,7 +447,7 @@ class HTTPRouterTest extends Unit
             'name' => 'John'
         ];
 
-        $reflection = new ReflectionMethod(framework\clarity\Http\router\HTTPRouter::class, 'mapParams');
+        $reflection = new ReflectionMethod(HTTPRouter::class, 'mapParams');
 
         $result = $reflection->invoke($this->router, $queryParams, $params);
 
@@ -464,7 +466,7 @@ class HTTPRouterTest extends Unit
 
         $initialGroupsCount = count($router->groups);
 
-        $this->router->group('/testGroup', function (framework\clarity\Http\router\HTTPRouter $router) {
+        $this->router->group('/testGroup', function (HTTPRouter $router) {
             $this->router->get('test', 'Test::actionTest');
         });
 
@@ -479,7 +481,7 @@ class HTTPRouterTest extends Unit
     {
         $router = $this->router;
 
-        $router->group('testGroup', function (framework\clarity\Http\router\HTTPRouter $router) {
+        $router->group('testGroup', function (HTTPRouter $router) {
             $router->get('test', 'Test::actionTest');
         });
 
@@ -495,8 +497,8 @@ class HTTPRouterTest extends Unit
     {
         $router = $this->router;
 
-        $router->group('testGroupOne', function (framework\clarity\Http\router\HTTPRouter $router) {
-            $router->group('testGroupTwo', function (framework\clarity\Http\router\HTTPRouter $router) {
+        $router->group('testGroupOne', function (HTTPRouter $router) {
+            $router->group('testGroupTwo', function (HTTPRouter $router) {
                 $router->get('test', 'Test::actionTest');
             });
         });
@@ -710,7 +712,7 @@ class HTTPRouterTest extends Unit
      */
     public function testDispatchWithRoute(): void
     {
-        $this->route = $this->createMock(framework\clarity\Http\router\Route::class);
+        $this->route = $this->createMock(Route::class);
         $uriMock = $this->createMock(UriInterface::class);
 
         $this->route->method('getHandler')->willReturn('SomeHandlerClass');

@@ -12,6 +12,7 @@ use framework\clarity\Console\enums\ConsoleEventsEnum;
 use framework\clarity\EventDispatcher\interfaces\EventDispatcherInterface;
 use framework\clarity\EventDispatcher\interfaces\ObserverInterface;
 use framework\clarity\EventDispatcher\Message;
+use InvalidArgumentException;
 
 /**
  * Плагин интерактивного ввода параметров

@@ -15,6 +15,5 @@ interface MiddlewareInterface
      * @param  callable $next
      * @return void
      */
-    public function process(
-        framework\clarity\Http\interfaces\ServerRequestInterface $request, framework\clarity\Http\interfaces\ResponseInterface $response, callable $next): void;
+    public function process(ServerRequestInterface $request, ResponseInterface $response, callable $next): void;
 }

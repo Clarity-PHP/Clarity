@@ -48,7 +48,7 @@ class Response extends Message implements ResponseInterface
      * @param string $reasonPhrase
      * @return $this
      */
-    public function withStatus(int $code, string $reasonPhrase = ''): framework\clarity\Http\Response
+    public function withStatus(int $code, string $reasonPhrase = ''): Response
     {
         $newResponse = clone $this;
 

@@ -5,6 +5,7 @@ namespace framework\clarity\Nodes;
 use framework\clarity\Container\DIContainer;
 use framework\clarity\Container\interfaces\ContainerInterface;
 use framework\clarity\Helpers\PathHelper;
+use framework\clarity\Http\router\HTTPRouter;
 use framework\clarity\Http\router\interfaces\HTTPRouterInterface;
 
 abstract class Node

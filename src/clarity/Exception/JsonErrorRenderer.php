@@ -4,6 +4,7 @@ namespace framework\clarity\Exception;
 
 use framework\clarity\Container\interfaces\ParameterStorageInterface;
 use framework\clarity\Exception\interfaces\ErrorRenderInterface;
+use Throwable;
 
 readonly class JsonErrorRenderer implements ErrorRenderInterface
 {

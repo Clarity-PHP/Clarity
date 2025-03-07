@@ -13,9 +13,9 @@ interface RequestInterface extends MessageInterface
 
     /**
      * @param string $requestTarget
-     * @return framework\clarity\Http\interfaces\RequestInterface
+     * @return RequestInterface
      */
-    public function withRequestTarget(mixed $requestTarget): framework\clarity\Http\interfaces\RequestInterface;
+    public function withRequestTarget(mixed $requestTarget): RequestInterface;
 
     /**
      * @return string
@@ -24,9 +24,9 @@ interface RequestInterface extends MessageInterface
 
     /**
      * @param string $method
-     * @return framework\clarity\Http\interfaces\RequestInterface
+     * @return RequestInterface
      */
-    public function withMethod(string $method): framework\clarity\Http\interfaces\RequestInterface;
+    public function withMethod(string $method): RequestInterface;
 
     /**
      * @return UriInterface
@@ -36,7 +36,7 @@ interface RequestInterface extends MessageInterface
     /**
      * @param UriInterface $uri
      * @param bool $preserveHost
-     * @return framework\clarity\Http\interfaces\RequestInterface
+     * @return RequestInterface
      */
-    public function withUri(UriInterface $uri, bool $preserveHost = false): framework\clarity\Http\interfaces\RequestInterface;
+    public function withUri(UriInterface $uri, bool $preserveHost = false): RequestInterface;
 }
