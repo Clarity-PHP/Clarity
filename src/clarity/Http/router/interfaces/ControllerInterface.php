@@ -13,5 +13,5 @@ interface ControllerInterface
      * @param array $params
      * @return ResponseInterface
      */
-    public function render(string $view, array $params = []): framework\clarity\Http\interfaces\ResponseInterface;
+    public function render(string $view, array $params = []): ResponseInterface;
 }

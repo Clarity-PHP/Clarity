@@ -114,7 +114,7 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         $path = '/';
 
         foreach ($this->prefix as $prefix) {
-            $path .= trim($prefix, '/') . 'HTTPRouter.php/';
+            $path .= trim($prefix, '/') . '/';
         }
 
         $params = $this->prepareParams($route);

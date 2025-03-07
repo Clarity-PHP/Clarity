@@ -2,7 +2,9 @@
 
 namespace framework\clarity\view\exceptions;
 
-class ViewNotFoundException extends framework\clarity\Http\router\exceptions\HttpNotFoundException
+use framework\clarity\Http\router\exceptions\HttpNotFoundException;
+
+class ViewNotFoundException extends HttpNotFoundException
 {
     public function __construct(string $viewName)
     {

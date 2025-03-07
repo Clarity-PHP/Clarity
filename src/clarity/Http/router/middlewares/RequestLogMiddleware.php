@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace framework\clarity\Http\router\middlewares;
 
+use framework\clarity\EventDispatcher\EventDispatcher;
+use framework\clarity\EventDispatcher\interfaces\EventDispatcherInterface;
 use framework\clarity\Http\interfaces\ResponseInterface;
 use framework\clarity\Http\interfaces\ServerRequestInterface;
 use framework\clarity\Http\router\interfaces\MiddlewareInterface;

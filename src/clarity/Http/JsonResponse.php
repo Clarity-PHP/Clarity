@@ -2,6 +2,7 @@
 
 namespace framework\clarity\Http;
 
+use AllowDynamicProperties;
 use Exception;
 use framework\clarity\Http\enum\ReasonPhraseEnum;
 use RuntimeException;

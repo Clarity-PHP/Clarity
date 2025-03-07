@@ -57,7 +57,7 @@ final class Console
      */
     public static function line(string $message, ?string $fgColor = null, ?string $bgColor = null): void
     {
-        echo Console . phpself::format($message, $fgColor, $bgColor) . PHP_EOL;
+        echo self::format($message, $fgColor, $bgColor) . PHP_EOL;
     }
 
     /**

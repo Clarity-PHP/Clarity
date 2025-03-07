@@ -3,6 +3,7 @@
 namespace framework\clarity\Exception;
 
 use framework\clarity\Exception\interfaces\ErrorRenderInterface;
+use Throwable;
 
 class ConsoleErrorRenderer implements ErrorRenderInterface
 {

@@ -2,6 +2,9 @@
 
 namespace framework\clarity\Kernel;
 
+use framework\clarity\ComponentManager\ComponentManager;
+use framework\clarity\Container\DIContainer;
+use framework\clarity\Container\interfaces\ParameterStorageInterface;
 use framework\clarity\EventDispatcher\interfaces\EventDispatcherInterface;
 use framework\clarity\EventDispatcher\Message;
 use framework\clarity\Exception\interfaces\ErrorHandlerInterface;
@@ -10,6 +13,7 @@ use framework\clarity\Http\interfaces\ServerRequestInterface;
 use framework\clarity\Http\router\exceptions\HttpException;
 use framework\clarity\Http\router\interfaces\HTTPRouterInterface;
 use framework\clarity\Kernel\interfaces\HttpKernelInterface;
+use framework\clarity\Logger\DebugTagGenerator;
 use framework\clarity\Logger\interfaces\LoggerInterface;
 use framework\clarity\Logger\observers\TagUpdatePreventListener;
 use JetBrains\PhpStorm\NoReturn;
