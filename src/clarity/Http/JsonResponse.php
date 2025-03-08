@@ -22,7 +22,7 @@ class JsonResponse extends Response
 
             $this->body->setIsWritable(true);
 
-            $content = json_encode($data);
+            $content = json_encode($data, JSON_UNESCAPED_UNICODE);
 
             $this->body->write($content);
 
