@@ -76,6 +76,8 @@ readonly class HttpKernel implements HttpKernelInterface
 
             $response = $response->withBody($result->getBody());
 
+            $response = $response->withStatus($result->getStatusCode(), $result->getReasonPhrase());
+
         } catch (HttpException $e) {
 
             $this->eventDispatcher->trigger(KernelEvents::KERNEL_EXCEPTION, new Message($e));
