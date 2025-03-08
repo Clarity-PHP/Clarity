@@ -176,11 +176,24 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
     public function findRoute(string $url, string $method): ?Route
     {
-        if (
-            isset($this->routes[$method]) === true
-            && isset($this->routes[$method][$url]) === true
-        ) {
-            return $this->routes[$method][$url];
+        if (isset($this->routes[$method]) === false) {
+            return null;
+        }
+
+        foreach ($this->routes[$method] as $route => $routeObj) {
+            $pattern = preg_replace_callback('/{(\w+)}/', function ($matches) {
+                return '(?P<' . $matches[1] . '>[^/]+)';
+            }, $route);
+
+            $pattern = "#^" . $pattern . "$#";
+
+            if (preg_match($pattern, $url, $matches)) {
+                foreach ($routeObj->params as &$param) {
+                    $param['value'] = $matches[$param['name']] ?? $param['default'];
+                }
+
+                return $routeObj;
+            }
         }
 
         return null;
@@ -215,13 +228,13 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         $method = $request->getMethod();
         $path = $request->getUri()->getPath();
 
-        if (isset($this->routes[$method][$path]) === false) {
+        if ($this->findRoute($path, $method) === null) {
             throw new HttpNotFoundException('Страница не найдена');
         }
 
-        $route = $this->routes[$method][$path];
+        $route = $this->findRoute($path, $method);
 
-        $params = $this->mapParams($request->getQueryParams(), $route->params);
+        $params = $this->mapParams($route->params);
 
         $controller = $this->container->build($route->handler);
 
@@ -274,30 +287,26 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
     }
 
     /**
-     * @param array $queryParams
      * @param array $params
      * @return array
      */
-    private function mapParams(array $queryParams, array $params): array
+    private function mapParams(array $params): array
     {
         $result = [];
 
         foreach ($params as $param) {
-            if (isset($queryParams[$param['name']]) === true) {
-                $result[] = $queryParams[$param['name']];
-
+            if (isset($param['value']) === true) {
+                $result[$param['name']] = $param['value'];
                 continue;
             }
 
             if (isset($param['default']) === true) {
-                $result[] = $param['default'];
-
+                $result[$param['name']] = $param['default'];
                 continue;
             }
 
             if ($param['required'] === false) {
-                $result[] = null;
-
+                $result[$param['name']] = null;
                 continue;
             }
 
@@ -428,7 +437,7 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
      */
     private function handleMiddlewares(
         array $middlewares, ServerRequestInterface
-        $request, ResponseInterface $response,
+    $request, ResponseInterface $response,
     ): void {
 
         $handler = function() use ($request, $response) {
