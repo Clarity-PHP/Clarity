@@ -84,8 +84,6 @@ readonly class HttpKernel implements HttpKernelInterface
 
             $response = $response->withStatus($e->getStatusCode(), $e->getMessage() ?: 'HTTP Error');
 
-            // $this->logger->error($e);
-
             $body = $response->getBody();
 
             $errorResponse = $this->errorHandler->handle($e);
@@ -94,15 +92,11 @@ readonly class HttpKernel implements HttpKernelInterface
 
             $response = $response->withBody($body);
 
-            $response = $response->withHeader('Content-Type', 'text/html');
-
         } catch (Throwable $e) {
 
             $this->eventDispatcher->trigger(KernelEvents::KERNEL_EXCEPTION, new Message($e));
 
             $response = $response->withStatus(500, 'Internal Server Error');
-
-            // $this->logger->critical($e);
 
             $body = $response->getBody();
 

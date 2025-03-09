@@ -33,17 +33,25 @@ readonly class HttpErrorHandlingStrategy implements ErrorHandlingStrategyInterfa
     {
         $statusCode = $this->response->getStatusCode() ?: 500;
 
-        $acceptHeader = $this->request->getHeader('Accept') ?? 'text/html';
+        $contentType = $this->request->getHeader('Content-Type');
 
-        $acceptHeader = $acceptHeader ? explode(',', $acceptHeader)[0] : 'text/html';
+        $acceptHeader = empty($contentType) === false
+            ? (is_array($contentType) ? reset($contentType) : $contentType)
+            : ($this->request->getHeader('Accept') ?? '');
+
+        $acceptHeader = match (true) {
+            empty($contentType) === false => $acceptHeader,
+            $acceptHeader === '*/*' => 'application/json',
+            empty($acceptHeader )=== true => 'application/json',
+            default => explode(',', $acceptHeader)[0],
+        };
 
         $template = $this->templates[$statusCode]['template'] ?? $this->defaultTemplate;
-
         $layout = $this->templates[$statusCode]['layout'] ?? $this->defaultLayout;
 
         $context = new ErrorRendererContext($statusCode, $e, $template, $layout);
 
-        if (isset($this->renderers[$acceptHeader]) === true) {
+        if (isset($this->renderers[$acceptHeader])) {
             $handler = $this->container->get($this->renderers[$acceptHeader]);
 
             return $handler->handle($context);
