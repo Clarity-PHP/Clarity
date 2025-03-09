@@ -180,18 +180,19 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $contentType = $this->getHeaderLine('Content-Type');
 
-        if ($this->getMethod() === 'POST') {
-            if (str_contains($contentType, 'application/json') === true) {
+        $method = $this->getMethod();
 
-                $body = file_get_contents('php://input');
+        if (str_contains($contentType, 'application/json')) {
+            $body = file_get_contents('php://input');
 
-                if ($body === false) {
-                    $body = $this->getBody()->getContents();
-                }
-
-                return json_decode($body, true);
+            if ($body === false || $body === '') {
+                $body = $this->getBody()->getContents();
             }
 
+            return json_decode($body, true);
+        }
+
+        if ($method === 'POST') {
             return $_POST;
         }
 
