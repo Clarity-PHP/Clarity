@@ -76,7 +76,6 @@ final class ConsoleKernel implements ConsoleKernelInterface
         }
     }
 
-
     /**
      * @param string $className
      * @return void
@@ -87,13 +86,12 @@ final class ConsoleKernel implements ConsoleKernelInterface
             throw new InvalidArgumentException("Класс $className не соответствует интерфейсу ConsoleCommandInterface");
         }
 
-        $part = explode('\\', $className);
+        $commandName = $className::getSignature();
 
-        $commandName = str_replace('Command', '', end($part));
+        preg_match('/^([^\s{]+)/', $commandName, $matches);
 
-        $this->commandMap[$commandName] = $className;
+        $this->commandMap[$matches[1]] = $className;
     }
-
 
     /**
      * @param string $commandNameSpace
