@@ -475,4 +475,9 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
         return $groupMiddlewares;
     }
+
+    public function addResource(string $name, string $controller, array $config = []): void
+    {
+        (new Resource($name, $controller, $config))->build($this);
+    }
 }
