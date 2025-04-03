@@ -487,9 +487,9 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
     private function paramsValidation(string $param, string $type): mixed
     {
         if ($type === 'int') {
-            return (bool)filter_var($param, FILTER_VALIDATE_INT) !== false || $param === '0'
-                ? true
-                : throw new InvalidArgumentException('Параметр должен быть целым числом');
+            return (bool)filter_var($param, FILTER_VALIDATE_INT) !== false || $param === '0' ?
+                true :
+                throw new InvalidArgumentException('Параметр должен быть целым числом');
         }
 
         if ($type === 'float') {
