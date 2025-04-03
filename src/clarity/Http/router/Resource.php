@@ -14,6 +14,8 @@ class Resource
         private array  $config = []
     ) {}
 
+
+    //TODO finish config
     public function build(HTTPRouterInterface $router): void
     {
         $path = $this->name;
