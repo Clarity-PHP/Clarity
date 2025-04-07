@@ -486,6 +486,10 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
     private function paramsValidation(string $param, string $type): mixed
     {
+        if ($type === 'string') {
+            return true;
+        }
+
         if ($type === 'int') {
             return (bool)filter_var($param, FILTER_VALIDATE_INT) !== false || $param === '0' ?
                 true :
