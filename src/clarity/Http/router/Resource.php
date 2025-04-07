@@ -14,15 +14,14 @@ class Resource
         private array  $config = []
     ) {}
 
-
-    //TODO finish config
     public function build(HTTPRouterInterface $router): void
     {
         $path = $this->name;
 
         $router->group($path, function (HTTPRouterInterface $router) {
-            foreach ($this->setConfiguration($this->name) as $params) {
+            foreach ($this->getConfiguration($this->name) as $params) {
                 $route = $router->add($params['method'], $params['path'], $this->controller . '::' . $params['action']);
+
                 if (empty($params['middleware']) === true) {
                     continue;
                 }
@@ -32,9 +31,9 @@ class Resource
         });
     }
 
-    private function setConfiguration(string $path): array
+    private function getConfiguration(string $path): array
     {
-        return [
+        $config = [
             'index' => [
                 'method' => 'GET',
                 'path' => $path,
@@ -72,5 +71,17 @@ class Resource
                 'middleware' => [],
             ],
         ];
+
+        foreach ($this->config as $newMethod => $elements) {
+            if (isset($config[$newMethod]) === false) {
+                $config[$newMethod] = $elements;
+
+                continue;
+            }
+
+            $config[$newMethod] = array_merge($config[$newMethod], $elements);
+        }
+
+        return $config;
     }
 }
