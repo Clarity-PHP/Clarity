@@ -234,7 +234,7 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
         $route = $this->findRoute($path, $method);
 
-        $params = $this->mapParams($route->params);
+        $params = $this->mapParams($request->getQueryParams(), $route->params);
 
         $controller = $this->container->build($route->handler);
 
@@ -271,15 +271,19 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
      */
     private function prepareParams(string $route): array
     {
-        preg_match_all('/{(\??\w+)(?:=(\w+))?}/', $route, $matches, PREG_SET_ORDER);
+        preg_match_all('/{(\??\w+)(?::(\w+))?(?:=([^}]+))?}/', $route, $matches, PREG_SET_ORDER);
 
         $params = [];
 
         foreach ($matches as $match) {
+            $isOptional = str_starts_with($match[1], '?');
+            $paramName = $isOptional ? substr($match[1], 1) : $match[1];
+
             $params[] = [
-                'name' => $match[0][1] !== '?' ? $match[1] : substr($match[1], 1),
-                'required' => $match[0][1] !== '?',
-                'default' => $match[2] ?? null,
+                'name' => $paramName,
+                'required' => $isOptional,
+                'type' => $match[2] ?? null,
+                'default' => $match[3] ?? null,
             ];
         }
 
@@ -290,23 +294,27 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
      * @param array $params
      * @return array
      */
-    private function mapParams(array $params): array
+    private function mapParams(array $queryParams, array $routeParams): array
     {
         $result = [];
 
-        foreach ($params as $param) {
-            if (isset($param['value']) === true) {
-                $result[$param['name']] = $param['value'];
+        foreach ($routeParams as $param) {
+            $paramName = $param['name'];
+
+            if (isset($queryParams[$paramName]) === true) {
+                $this->paramsValidation($queryParams[$paramName], $param['type']);
+                $result[$paramName] = $queryParams[$paramName];
+
                 continue;
             }
 
             if (isset($param['default']) === true) {
-                $result[$param['name']] = $param['default'];
+                $result[$paramName] = $param['default'];
                 continue;
             }
 
             if ($param['required'] === false) {
-                $result[$param['name']] = null;
+                $result[$paramName] = null;
                 continue;
             }
 
@@ -474,6 +482,33 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         }
 
         return $groupMiddlewares;
+    }
+
+    private function paramsValidation(string $param, string $type): mixed
+    {
+        if ($type === 'string') {
+            return true;
+        }
+
+        if ($type === 'int') {
+            return (bool)filter_var($param, FILTER_VALIDATE_INT) !== false || $param === '0' ?
+                true :
+                throw new InvalidArgumentException('Параметр должен быть целым числом');
+        }
+
+        if ($type === 'float') {
+            return (bool)filter_var($param, FILTER_VALIDATE_FLOAT) === true ?
+                true :
+                throw new InvalidArgumentException('Параметр должен обладать типом float');
+        }
+
+        if ($type === 'bool') {
+            return (bool)filter_var($param, FILTER_VALIDATE_BOOLEAN) === true ?
+                true :
+                throw new InvalidArgumentException('Параметр должен обладать типом bool');
+        }
+
+        return true;
     }
 
     public function addResource(string $name, string $controller, array $config = []): void
