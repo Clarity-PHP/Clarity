@@ -484,6 +484,11 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         return $groupMiddlewares;
     }
 
+    /**
+     * @param string $param
+     * @param string $type
+     * @return mixed
+     */
     private function paramsValidation(string $param, string $type): mixed
     {
         if ($type === 'string') {
