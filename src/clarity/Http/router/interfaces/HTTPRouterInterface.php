@@ -12,6 +12,14 @@ use framework\clarity\Http\router\RouteGroup;
 interface HTTPRouterInterface
 {
     /**
+     * @param string $name
+     * @param string $controller
+     * @param array $config
+     * @return Route
+     */
+    public function addResource(string $name, string $controller, array $config = []): void;
+
+    /**
      * Добавление маршрута для метода GET
      *
      * @param  string $route путь
