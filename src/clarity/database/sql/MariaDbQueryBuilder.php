@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace framework\clarity\database\sql;
 
-use framework\clarity\database\interfaces\MysqlQueryBuilderInterface;
+use framework\clarity\database\interfaces\MariadbQueryBuilderInterface;
 use InvalidArgumentException;
 
-class MariaDbQueryBuilder implements MysqlQueryBuilderInterface
+class MariaDbQueryBuilder implements MariadbQueryBuilderInterface
 {
     private string $select = '';
     private string $from = '';

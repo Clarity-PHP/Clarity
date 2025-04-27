@@ -6,7 +6,7 @@ namespace framework\clarity\database\interfaces;
 
 use framework\clarity\database\sql\StatementParameters;
 
-interface MysqlQueryBuilderInterface extends QueryBuilderInterface
+interface MariadbQueryBuilderInterface extends QueryBuilderInterface
 {
     function getStatement(): StatementParameters;
 }
