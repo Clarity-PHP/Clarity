@@ -6,7 +6,7 @@ namespace framework\clarity\database\sql;
 
 use framework\clarity\database\interfaces\DataBaseConnectionInterface;
 use framework\clarity\database\interfaces\QueryBuilderInterface;
-use framework\clarity\database\interfaces\MysqlQueryBuilderInterface;
+use framework\clarity\database\interfaces\MariadbQueryBuilderInterface;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
@@ -171,10 +171,10 @@ class DataBaseConnection implements DataBaseConnectionInterface
     }
 
     /**
-     * @param MysqlQueryBuilderInterface $query
+     * @param MariadbQueryBuilderInterface $query
      * @return PDOStatement
      */
-    private function executeQuery(MysqlQueryBuilderInterface $query): PDOStatement
+    private function executeQuery(MariadbQueryBuilderInterface $query): PDOStatement
     {
         $statementParams = $query->getStatement();
         $statement = $this->connection->prepare($statementParams->sql);
