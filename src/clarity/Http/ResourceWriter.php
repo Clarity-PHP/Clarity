@@ -18,6 +18,10 @@ class ResourceWriter implements ResourceWriterInterface
     )
     {}
 
+    /**
+     * @param string $name
+     * @return $this
+     */
     public function setResourceName(string $name): static
     {
         if (empty($name) === true) {
@@ -28,6 +32,10 @@ class ResourceWriter implements ResourceWriterInterface
         return $this;
     }
 
+    /**
+     * @param array $values
+     * @return void
+     */
     public function create(array $values): void
     {
         if (empty($this->resourceName) === true) {
@@ -37,6 +45,11 @@ class ResourceWriter implements ResourceWriterInterface
         $this->connection->insert($this->resourceName, $values);
     }
 
+    /**
+     * @param int|string $id
+     * @param array $values
+     * @return void
+     */
     public function update(int|string $id, array $values): void
     {
         if (empty($this->resourceName) === true) {
@@ -50,6 +63,11 @@ class ResourceWriter implements ResourceWriterInterface
         );
     }
 
+    /**
+     * @param int|string $id
+     * @param array $values
+     * @return void
+     */
     public function patch(int|string $id, array $values): void
     {
         if (empty($this->resourceName) === true) {
@@ -59,6 +77,10 @@ class ResourceWriter implements ResourceWriterInterface
         $this->update($id, $values);
     }
 
+    /**
+     * @param int|string $id
+     * @return void
+     */
     public function delete(int|string $id): void
     {
         if (empty($this->resourceName) === true) {
@@ -71,6 +93,9 @@ class ResourceWriter implements ResourceWriterInterface
         );
     }
 
+    /**
+     * @return string
+     */
     public function getLastInsertId(): string
     {
         if (empty($this->resourceName) === true) {
