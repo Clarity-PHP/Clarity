@@ -154,6 +154,8 @@ abstract class AbstractResourceController
 
         $form = $this->formRequestFactory->create($this->forms[ResourceActionTypesEnum::CREATE->value]);
 
+        $form->setValues($this->request->getParsedBody());
+
         $form->validate();
 
         if (empty($form->getErrors()) === false) {
