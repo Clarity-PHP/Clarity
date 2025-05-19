@@ -6,6 +6,7 @@ namespace framework\clarity\database\file;
 
 use framework\clarity\database\interfaces\DataBaseConnectionInterface;
 use framework\clarity\database\interfaces\QueryBuilderInterface;
+use framework\clarity\Http\router\exceptions\HttpBadRequestException;
 use RuntimeException;
 use JsonException;
 use InvalidArgumentException;
@@ -114,20 +115,51 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      * @param array $data
      * @return int
      * @throws JsonException
+     * @throws HttpBadRequestException
      */
     public function insert(string $resource, array $data): int
     {
-        $rows = $this->readResource($resource);
+        $currentData = $this->readResource($resource);
 
-        $id = $this->getNextId($rows);
+        // Обработка простых массивов
+        $isSimpleArray = array_values($currentData) === $currentData;
+        if ($isSimpleArray === true) {
+            $value = reset($data);
+
+            if (is_scalar($value) === false) {
+                throw new HttpBadRequestException("Only scalar values allowed in simple array '$resource'");
+            }
+
+            if (in_array($value, $currentData, true) === true) {
+                throw new HttpBadRequestException("Value '$value' already exists in '$resource'");
+            }
+
+            $currentData[] = $value;
+
+            $this->writeResource($resource, $currentData);
+
+            return count($currentData);
+        }
+
+        $id = $this->getNextId($currentData);
+
+        foreach ($currentData as $item) {
+            if (is_array($item) === false) {
+                continue;
+            }
+
+            $diff = array_diff_assoc($data, $item);
+
+            if (empty($diff) === true) {
+                throw new HttpBadRequestException("Duplicate entry in '$resource'");
+            }
+        }
 
         $data['id'] = $id;
 
-        $rows[] = $data;
+        $currentData[] = $data;
 
-        $this->writeResource($resource, $rows);
-
-        $this->lastInsertId = $id;
+        $this->writeResource($resource, $currentData);
 
         return $id;
     }
