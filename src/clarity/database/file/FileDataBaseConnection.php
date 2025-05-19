@@ -10,7 +10,7 @@ use RuntimeException;
 use JsonException;
 use InvalidArgumentException;
 
-class DataBaseConnection implements DataBaseConnectionInterface
+class FileDataBaseConnection implements DataBaseConnectionInterface
 {
     private string $directory;
     private ?int $lastInsertId = null;

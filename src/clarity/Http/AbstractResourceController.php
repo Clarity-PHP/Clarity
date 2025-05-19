@@ -13,7 +13,11 @@ use framework\clarity\Http\router\exceptions\HttpForbiddenException;
 
 abstract class AbstractResourceController
 {
-    private array $forms = [];
+    protected array $forms = [
+        ResourceActionTypesEnum::CREATE->value => FormRequest::class,
+        ResourceActionTypesEnum::UPDATE->value => FormRequest::class,
+        ResourceActionTypesEnum::PATCH->value => FormRequest::class,
+    ];
 
     /**
      * @param ResourceDataFilterInterface $resourceDataFilter
@@ -34,12 +38,6 @@ abstract class AbstractResourceController
 
         $this->resourceWriter
             ->setResourceName($this->getResourceName());
-
-        $this->forms = [
-            ResourceActionTypesEnum::CREATE->value => FormRequest::class,
-            ResourceActionTypesEnum::UPDATE->value => FormRequest::class,
-            ResourceActionTypesEnum::PATCH->value => FormRequest::class,
-        ];
     }
 
     /**
