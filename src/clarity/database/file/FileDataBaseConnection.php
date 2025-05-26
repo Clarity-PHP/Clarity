@@ -195,7 +195,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
             $toDelete = (string) reset($condition);
 
             if (in_array($toDelete, array_map('strval', $rows), true) === false) {
-                throw new httpBadRequestException(
+                throw new HttpBadRequestException(
                     "Значение «{$toDelete}» не найдено в ресурсе «{$resource}»"
                 );
             }
