@@ -6,11 +6,12 @@ namespace framework\clarity\database\file;
 
 use framework\clarity\database\interfaces\DataBaseConnectionInterface;
 use framework\clarity\database\interfaces\QueryBuilderInterface;
+use framework\clarity\Http\router\exceptions\HttpBadRequestException;
 use RuntimeException;
 use JsonException;
 use InvalidArgumentException;
 
-final class DataBaseConnection implements DataBaseConnectionInterface
+class FileDataBaseConnection implements DataBaseConnectionInterface
 {
     private string $directory;
     private ?int $lastInsertId = null;
@@ -48,7 +49,13 @@ final class DataBaseConnection implements DataBaseConnectionInterface
      */
     public function selectOne(QueryBuilderInterface $query): ?array
     {
-        return $this->select($query)[0] ?? null;
+       $first = $this->select($query)[0] ?? null;
+
+       if ($first !== null && ! is_array($first)) {
+          return ['value' => $first];
+       }
+
+       return $first;
     }
 
     /**
@@ -84,7 +91,6 @@ final class DataBaseConnection implements DataBaseConnectionInterface
      * @param array $data
      * @param array $condition
      * @return int
-     * @throws JsonException
      */
     public function update(string $resource, array $data, array $condition = []): int
     {
@@ -113,21 +119,51 @@ final class DataBaseConnection implements DataBaseConnectionInterface
      * @param string $resource
      * @param array $data
      * @return int
-     * @throws JsonException
+     * @throws HttpBadRequestException
      */
     public function insert(string $resource, array $data): int
     {
-        $rows = $this->readResource($resource);
+        $currentData = $this->readResource($resource);
 
-        $id = $this->getNextId($rows);
+        // Обработка простых массивов
+        $isSimpleArray = array_values($currentData) === $currentData;
+        if ($isSimpleArray === true) {
+            $value = reset($data);
+
+            if (is_scalar($value) === false) {
+                throw new HttpBadRequestException("Only scalar values allowed in simple array '$resource'");
+            }
+
+            if (in_array($value, $currentData, true) === true) {
+                throw new HttpBadRequestException("Value '$value' already exists in '$resource'");
+            }
+
+            $currentData[] = $value;
+
+            $this->writeResource($resource, $currentData);
+
+            return count($currentData);
+        }
+
+        $id = $this->getNextId($currentData);
+
+        foreach ($currentData as $item) {
+            if (is_array($item) === false) {
+                continue;
+            }
+
+            $diff = array_diff_assoc($data, $item);
+
+            if (empty($diff) === true) {
+                throw new HttpBadRequestException("Duplicate entry in '$resource'");
+            }
+        }
 
         $data['id'] = $id;
 
-        $rows[] = $data;
+        $currentData[] = $data;
 
-        $this->writeResource($resource, $rows);
-
-        $this->lastInsertId = $id;
+        $this->writeResource($resource, $currentData);
 
         return $id;
     }
@@ -136,22 +172,59 @@ final class DataBaseConnection implements DataBaseConnectionInterface
      * @param string $resource
      * @param array $condition
      * @return int
-     * @throws JsonException
+     * @throws HttpBadRequestException
      */
     public function delete(string $resource, array $condition = []): int
     {
         $rows = $this->readResource($resource);
 
-        $original = count($rows);
+        $originalCount = count($rows);
 
-        $rows = array_filter(
+        if (empty($condition) === true) {
+            throw new httpBadRequestException(
+                "Не задано, что удалять из ресурса «{$resource}»"
+            );
+        }
+
+        $condition = array_map('urldecode', $condition);
+
+        $isSimpleArray = array_values($rows) === $rows;
+
+        if ($isSimpleArray === true) {
+
+            $toDelete = (string) reset($condition);
+
+            if (in_array($toDelete, array_map('strval', $rows), true) === false) {
+                throw new httpBadRequestException(
+                    "Значение «{$toDelete}» не найдено в ресурсе «{$resource}»"
+                );
+            }
+
+            $filtered = array_filter(
+                $rows,
+                fn($item) => (string)$item !== $toDelete
+            );
+
+            $this->writeResource($resource, array_values($filtered));
+
+            return $originalCount - count($filtered);
+
+        }
+
+        $filtered = array_filter(
             $rows,
-            fn($row) => !$this->matchesAll($row, $condition)
+            fn($row) => ! $this->matchesAll($row, $condition)
         );
 
-        $this->writeResource($resource, array_values($rows));
+        if (count($filtered) === $originalCount) {
+            throw new httpBadRequestException(
+                "В ресурсе «{$resource}» не найдено записей, соответствующих условию"
+            );
+        }
 
-        return $original - count($rows);
+        $this->writeResource($resource, array_values($filtered));
+
+        return $originalCount - count($filtered);
     }
 
     /**
@@ -178,7 +251,6 @@ final class DataBaseConnection implements DataBaseConnectionInterface
 
         return false;
     }
-
 
     /**
      * @param string $resource
@@ -230,6 +302,7 @@ final class DataBaseConnection implements DataBaseConnectionInterface
     private function getNextId(array $rows): int
     {
         $max = 0;
+
         foreach ($rows as $row) {
             $max = max($max, (int)($row['id'] ?? 0));
         }
@@ -288,10 +361,35 @@ final class DataBaseConnection implements DataBaseConnectionInterface
             return $rows;
         }
 
+        // Если данные — это простой список
+        if (is_string($rows[0] ?? null) === true) {
+            return array_values(array_filter(
+                $rows,
+                fn($item) => $this->matchesSimpleValue($item, $clauses)
+            ));
+        }
+
         return array_values(array_filter(
             $rows,
             fn($row) => $this->matchesMultiple($row, $clauses)
         ));
+    }
+
+    /**
+     * @param mixed $value
+     * @param array $clauses
+     * @return bool
+     */
+    private function matchesSimpleValue(mixed $value, array $clauses): bool
+    {
+        foreach ($clauses as $clause) {
+            foreach ($clause as $col => $val) {
+                if ((string)$value !== (string)$val) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

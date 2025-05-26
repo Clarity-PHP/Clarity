@@ -40,9 +40,11 @@ class FormRequest implements FormRequestInterface
      */
     public function validate(): void
     {
-        foreach ($this->rules as $attribute => $rule) {
+        foreach ($this->rules as $attribute => $rules) {
+            $rules = is_array($rules) === true ? $rules : [$rules];
+
             if (
-                $rule === 'required'
+                in_array('required', $rules) === true
                 && empty($this->values[$attribute]) === true
             ) {
                 $this->addError($attribute, 'This field is required');
@@ -81,7 +83,15 @@ class FormRequest implements FormRequestInterface
      */
     public function getValues(): array
     {
-        return $this->values;
+        if ($this->skipEmptyValues === false) {
+            return $this->values;
+        }
+
+        return array_filter(
+            $this->values,
+            fn($v) => !($v === '' || $v === null),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 
     /**
