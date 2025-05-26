@@ -166,15 +166,18 @@ abstract class AbstractResourceController
     }
 
     /**
-     * @param string|int $id
+     * @param string|int|null $id
      * @return UpdateResponse
      * @throws HttpBadRequestException
+     * @throws HttpForbiddenException
      */
-    public function actionUpdate(string|int $id): UpdateResponse
+    public function actionUpdate(string|int|null $id): UpdateResponse
     {
         $this->checkCallAvailability(ResourceActionTypesEnum::UPDATE);
 
         $form = $this->formRequestFactory->create($this->forms[ResourceActionTypesEnum::UPDATE->value]);
+
+        $form->setValues($this->request->getParsedBody());
 
         $form->validate();
 
