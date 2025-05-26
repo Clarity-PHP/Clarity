@@ -362,8 +362,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
             return $rows;
         }
 
-        // Если данные — это простой список
-        if (is_string($rows[0] ?? null) === true) {
+        if (is_scalar($rows[0] ?? null) === true) {
             return array_values(array_filter(
                 $rows,
                 fn($item) => $this->matchesSimpleValue($item, $clauses)
