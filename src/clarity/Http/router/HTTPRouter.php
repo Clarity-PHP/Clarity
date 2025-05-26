@@ -176,22 +176,27 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
     public function findRoute(string $url, string $method): ?Route
     {
-        if (isset($this->routes[$method]) === false) {
+        if (! isset($this->routes[$method])) {
             return null;
         }
 
-        foreach ($this->routes[$method] as $route => $routeObj) {
-            $pattern = preg_replace_callback('/{(\w+)}/', function ($matches) {
-                return '(?P<' . $matches[1] . '>[^/]+)';
-            }, $route);
-
-            $pattern = "#^" . $pattern . "$#";
+        foreach ($this->routes[$method] as $routePattern => $routeObj) {
+            // Захватываем и {:id|integer}, и {id:type}, и {id:type=def}
+            $pattern = preg_replace_callback(
+                '/\{:?(\??\w+)(?:\|(\w+)|:(\w+))?(?:=[^}]+)?\}/',
+                function($m) {
+                    $name = ltrim($m[1], '?');
+                    return '(?P<' . $name . '>[^/]+)';
+                },
+                $routePattern
+            );
+            $pattern = "#^{$pattern}$#";
 
             if (preg_match($pattern, $url, $matches)) {
+                // Заполняем value из URL для mapParams
                 foreach ($routeObj->params as &$param) {
-                    $param['value'] = $matches[$param['name']] ?? $param['default'];
+                    $param['value'] = $matches[$param['name']] ?? null;
                 }
-
                 return $routeObj;
             }
         }
@@ -271,29 +276,54 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
      * @param string $route
      * @return array
      */
+    /**
+     * @param string $route
+     * @return array
+     */
     private function prepareParams(string $route): array
     {
-        preg_match_all('/{(\??\w+)(?::(\w+))?(?:=([^}]+))?}/', $route, $matches, PREG_SET_ORDER);
+        // Поддерживаем:
+        //  {id}, {id:type}, {:id|type}, {id:type=def}, {:id|type=def}
+        preg_match_all(
+            '/\{:?(\??\w+)(?:\|(\w+)|:(\w+))?(?:=([^}]+))?\}/',
+            $route,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         $params = [];
+        foreach ($matches as $m) {
+            // $m[1] — имя, возможно с '?'
+            $isOptional = str_starts_with($m[1], '?');
+            $name       = $isOptional ? substr($m[1], 1) : $m[1];
 
-        foreach ($matches as $match) {
-            $isOptional = str_starts_with($match[1], '?');
-            $paramName = $isOptional ? substr($match[1], 1) : $match[1];
+            // $m[2] если был {|type}, либо $m[3] если был {:name:type}
+            $type = $m[2] ?? $m[3] ?? null;
+            if ($type === 'integer') {
+                $type = 'int';
+            }
 
             $params[] = [
-                'name' => $paramName,
-                'required' => $isOptional,
-                'type' => $match[2] ?? null,
-                'default' => $match[3] ?? null,
+                'name'     => $name,
+                // для синтаксиса без '?' — true
+                'required' => ! $isOptional,
+                'type'     => $type,
+                'default'  => $m[4] ?? null,
+                // value заполняется в findRoute
             ];
         }
 
         return $params;
     }
 
+
     /**
      * @param array $params
+     * @return array
+     */
+    /**
+     * @param array $queryParams
+     * @param array $routeParams
      * @return array
      */
     private function mapParams(array $queryParams, array $routeParams): array
@@ -301,30 +331,39 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         $result = [];
 
         foreach ($routeParams as $param) {
-            $paramName = $param['name'];
+            $name = $param['name'];
 
-            if (isset($queryParams[$paramName]) === true) {
-                $this->paramsValidation($queryParams[$paramName], $param['type']);
-                $result[$paramName] = $queryParams[$paramName];
-
+            // 1) если в findRoute поставили value — берём его
+            if (array_key_exists('value', $param) && $param['value'] !== null) {
+                $result[$name] = $param['value'];
                 continue;
             }
 
-            if (isset($param['default']) === true) {
-                $result[$paramName] = $param['default'];
+            // 2) иначе — из query
+            if (array_key_exists($name, $queryParams)) {
+                $this->paramsValidation($queryParams[$name], $param['type']);
+                $result[$name] = $queryParams[$name];
                 continue;
             }
 
-            if ($param['required'] === false) {
-                $result[$paramName] = null;
+            // 3) значение по-умолчанию
+            if ($param['default'] !== null) {
+                $result[$name] = $param['default'];
                 continue;
             }
 
-            throw new InvalidArgumentException("Обязательный параметр {$param['name']} не найден в запросе");
+            // 4) обязательный?
+            if ($param['required']) {
+                throw new InvalidArgumentException("Обязательный параметр {$name} не найден");
+            }
+
+            // 5) не обязателен — null
+            $result[$name] = null;
         }
 
         return $result;
     }
+
 
     /**
      * @param string $name

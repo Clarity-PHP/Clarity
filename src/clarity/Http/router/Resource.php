@@ -53,7 +53,7 @@ class Resource
             ],
             'view' => [
                 'method' => 'GET',
-                'path' => "/{:id|integer}",
+                'path' => "{:id|integer}",
                 'action' => 'actionView',
                 'middleware' => [],
             ],
@@ -77,7 +77,7 @@ class Resource
             ],
             'delete' => [
                 'method' => 'DELETE',
-                'path' => "{$path}/{:id|integer}",
+                'path' => "{:id|integer}",
                 'action' => 'actionDelete',
                 'middleware' => [],
             ],

@@ -49,7 +49,13 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      */
     public function selectOne(QueryBuilderInterface $query): ?array
     {
-        return $this->select($query)[0] ?? null;
+       $first = $this->select($query)[0] ?? null;
+
+       if ($first !== null && ! is_array($first)) {
+          return ['value' => $first];
+       }
+
+       return $first;
     }
 
     /**
@@ -85,7 +91,6 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      * @param array $data
      * @param array $condition
      * @return int
-     * @throws JsonException
      */
     public function update(string $resource, array $data, array $condition = []): int
     {
@@ -114,7 +119,6 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      * @param string $resource
      * @param array $data
      * @return int
-     * @throws JsonException
      * @throws HttpBadRequestException
      */
     public function insert(string $resource, array $data): int
@@ -168,22 +172,59 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      * @param string $resource
      * @param array $condition
      * @return int
-     * @throws JsonException
+     * @throws HttpBadRequestException
      */
     public function delete(string $resource, array $condition = []): int
     {
         $rows = $this->readResource($resource);
 
-        $original = count($rows);
+        $originalCount = count($rows);
 
-        $rows = array_filter(
+        if (empty($condition) === true) {
+            throw new httpBadRequestException(
+                "Не задано, что удалять из ресурса «{$resource}»"
+            );
+        }
+
+        $condition = array_map('urldecode', $condition);
+
+        $isSimpleArray = array_values($rows) === $rows;
+
+        if ($isSimpleArray === true) {
+
+            $toDelete = (string) reset($condition);
+
+            if (in_array($toDelete, array_map('strval', $rows), true) === false) {
+                throw new httpBadRequestException(
+                    "Значение «{$toDelete}» не найдено в ресурсе «{$resource}»"
+                );
+            }
+
+            $filtered = array_filter(
+                $rows,
+                fn($item) => (string)$item !== $toDelete
+            );
+
+            $this->writeResource($resource, array_values($filtered));
+
+            return $originalCount - count($filtered);
+
+        }
+
+        $filtered = array_filter(
             $rows,
-            fn($row) => !$this->matchesAll($row, $condition)
+            fn($row) => ! $this->matchesAll($row, $condition)
         );
 
-        $this->writeResource($resource, array_values($rows));
+        if (count($filtered) === $originalCount) {
+            throw new httpBadRequestException(
+                "В ресурсе «{$resource}» не найдено записей, соответствующих условию"
+            );
+        }
 
-        return $original - count($rows);
+        $this->writeResource($resource, array_values($filtered));
+
+        return $originalCount - count($filtered);
     }
 
     /**
@@ -210,7 +251,6 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
 
         return false;
     }
-
 
     /**
      * @param string $resource
@@ -262,6 +302,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
     private function getNextId(array $rows): int
     {
         $max = 0;
+
         foreach ($rows as $row) {
             $max = max($max, (int)($row['id'] ?? 0));
         }

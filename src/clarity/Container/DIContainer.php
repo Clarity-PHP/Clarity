@@ -14,6 +14,7 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionType;
+use ReflectionUnionType;
 
 class DIContainer implements ContainerInterface
 {
@@ -414,6 +415,10 @@ class DIContainer implements ContainerInterface
      */
     private function resolveArgument(mixed $argValue, ?ReflectionType $paramType): mixed
     {
+        if ($paramType instanceof ReflectionUnionType === true) {
+            return $argValue;
+        }
+
         if (is_string($argValue) === true && $paramType !== null && $paramType->isBuiltin() === true) {
             return $argValue;
         }
