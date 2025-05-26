@@ -257,7 +257,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
      * @param string $resource
      * @return array
      */
-    protected function readResource(string $resource): array
+    public function readResource(string $resource): array
     {
         $path = $this->resolvePath($resource);
 
@@ -277,7 +277,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
     /**
      * @throws RuntimeException
      */
-    protected function writeResource(string $resource, array $rows): void
+    public function writeResource(string $resource, array $rows): void
     {
         $path = $this->resolvePath($resource);
         $json = json_encode($rows, self::JSON_OPTIONS);
