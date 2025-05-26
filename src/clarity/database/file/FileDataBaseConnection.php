@@ -7,6 +7,7 @@ namespace framework\clarity\database\file;
 use framework\clarity\database\interfaces\DataBaseConnectionInterface;
 use framework\clarity\database\interfaces\QueryBuilderInterface;
 use framework\clarity\Http\router\exceptions\HttpBadRequestException;
+use framework\clarity\Http\router\exceptions\HttpNotFoundException;
 use RuntimeException;
 use JsonException;
 use InvalidArgumentException;
@@ -195,7 +196,7 @@ class FileDataBaseConnection implements DataBaseConnectionInterface
             $toDelete = (string) reset($condition);
 
             if (in_array($toDelete, array_map('strval', $rows), true) === false) {
-                throw new HttpBadRequestException(
+                throw new HttpNotFoundException(
                     "Значение «{$toDelete}» не найдено в ресурсе «{$resource}»"
                 );
             }
