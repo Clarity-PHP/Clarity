@@ -67,59 +67,63 @@ readonly class HttpKernel implements HttpKernelInterface
 
         $response = clone $this->response;
 
+        if ($request->getMethod() === 'OPTIONS') {
+            return $response
+                ->withStatus(204)
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+                ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-KEY')
+                ->withHeader('Access-Control-Allow-Credentials', 'true');
+        }
+
         try {
+
             $result = $this->router->dispatch($request);
 
             $contentType = 'text/html';
 
             $response = $response->withHeader('Content-Type', $contentType);
-
             $response = $response->withBody($result->getBody());
-
             $response = $response->withStatus($result->getStatusCode(), $result->getReasonPhrase());
 
         } catch (HttpException $e) {
-
             $this->eventDispatcher->trigger(KernelEvents::KERNEL_EXCEPTION, new Message($e));
 
             $response = $response->withStatus($e->getStatusCode(), $e->getMessage() ?: 'HTTP Error');
 
             $body = $response->getBody();
-
-            $errorResponse = $this->errorHandler->handle($e);
-
-            $body->write($errorResponse);
+            $body->write($this->errorHandler->handle($e));
 
             $response = $response->withBody($body);
 
         } catch (Throwable $e) {
-
             $this->eventDispatcher->trigger(KernelEvents::KERNEL_EXCEPTION, new Message($e));
 
             $response = $response->withStatus(500, 'Internal Server Error');
 
             $body = $response->getBody();
-
-            $errorResponse = $this->errorHandler->handle($e);
-
-            $body->write($errorResponse);
+            $body->write($this->errorHandler->handle($e));
 
             $response = $response->withBody($body);
-
         } finally {
 
             if ($response->hasHeader('Content-Type') === false) {
-
                 $acceptHeader = $request->getHeaderLine('Accept') ?: 'text/html';
-
                 $response = $response->withHeader('Content-Type', $acceptHeader);
             }
 
-            $bodySize = strlen($response->getBody());
 
+            $bodySize = strlen((string)$response->getBody());
             if ($bodySize > 0) {
                 $response = $response->withHeader('Content-Length', (string)$bodySize);
             }
+
+
+            $response = $response
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+                ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-KEY')
+                ->withHeader('Access-Control-Allow-Credentials', 'true');
 
             $this->eventDispatcher->trigger(KernelEvents::KERNEL_RESPONSE, new Message($this));
         }
