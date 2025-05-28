@@ -81,7 +81,7 @@ abstract class AbstractResourceController
      * @return void
      * @throws HttpForbiddenException
      */
-    private function checkCallAvailability(ResourceActionTypesEnum $actionType): void
+    protected function checkCallAvailability(ResourceActionTypesEnum $actionType): void
     {
         if (in_array($actionType, $this->getAvailableActions(), true) === false) {
             throw new HttpForbiddenException(

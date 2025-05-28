@@ -51,13 +51,21 @@ class MariaDbQueryBuilder implements MariadbQueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @param array $condition
+     * @return $this
+     */
     public function where(array $condition): static
     {
+        $this->where    = '';
+
+        $this->bindings = [];
+
         $whereParts = [];
+
         foreach ($condition as $key => $value) {
             $param = 'where_' . count($this->bindings);
-            $escapedKey = $this->escapeField($key);
-            $whereParts[] = "$escapedKey = :$param";
+            $whereParts[] = $this->escapeField($key) . " = :$param";
             $this->bindings[$param] = $value;
         }
 
