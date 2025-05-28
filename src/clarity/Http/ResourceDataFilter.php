@@ -18,8 +18,8 @@ class ResourceDataFilter implements ResourceDataFilterInterface
     private array $defaultConditions = [];
 
     public function __construct(
-        private readonly DataBaseConnectionInterface $connection,
-        private readonly QueryBuilderInterface $queryBuilder
+        protected readonly DataBaseConnectionInterface $connection,
+        protected readonly QueryBuilderInterface $queryBuilder
     ) {}
 
     /**
