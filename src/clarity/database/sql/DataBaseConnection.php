@@ -7,6 +7,7 @@ namespace framework\clarity\database\sql;
 use framework\clarity\database\interfaces\DataBaseConnectionInterface;
 use framework\clarity\database\interfaces\QueryBuilderInterface;
 use framework\clarity\database\interfaces\MariadbQueryBuilderInterface;
+use framework\clarity\Http\router\exceptions\HttpBadRequestException;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
@@ -120,15 +121,35 @@ class DataBaseConnection implements DataBaseConnectionInterface
     public function insert(string $resource, array $data): int
     {
         $columns = array_keys($data);
-        $params = array_map(fn($i) => ':param_' . $i, array_keys($columns));
+        // используем те же имена для плэйсхолдеров
+        $params = array_map(fn($col) => ':' . $col, $columns);
 
-        $sql = 'INSERT INTO ' . $resource . ' (' . implode(', ', $columns) . ') 
-                VALUES (' . implode(', ', $params) . ')';
+        $sql = 'INSERT INTO ' . $resource
+            . ' (' . implode(', ', $columns) . ') VALUES ('
+            . implode(', ', $params) . ')';
 
         $bindings = array_combine($params, array_values($data));
 
         $statement = $this->connection->prepare($sql);
-        $statement->execute($bindings);
+
+        try {
+            $statement->execute($bindings);
+        } catch (PDOException $e) {
+            // SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry
+            $errorInfo = $e->errorInfo;
+            if (isset($errorInfo[0], $errorInfo[1])
+                && $errorInfo[0] === '23000'
+                && $errorInfo[1] === 1062
+            ) {
+                throw new HttpBadRequestException(
+                    'Duplicate entry for resource `' . $resource . '`',
+                    0,
+                    $e
+                );
+            }
+            // прочие ошибки пробрасываем дальше
+            throw $e;
+        }
 
         $this->lastInsertId = $this->connection->lastInsertId();
 
@@ -143,6 +164,7 @@ class DataBaseConnection implements DataBaseConnectionInterface
     public function delete(string $resource, array $condition): int
     {
         $whereParts = [];
+
         $bindings = [];
 
         foreach ($condition as $key => $value) {
@@ -152,6 +174,7 @@ class DataBaseConnection implements DataBaseConnectionInterface
         }
 
         $sql = 'DELETE FROM ' . $resource;
+
         if (empty($whereParts) === false) {
             $sql .= ' WHERE ' . implode(' AND ', $whereParts);
         }
