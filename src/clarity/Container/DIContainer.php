@@ -14,6 +14,7 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionType;
+use ReflectionUnionType;
 
 class DIContainer implements ContainerInterface
 {
@@ -121,50 +122,68 @@ class DIContainer implements ContainerInterface
      */
     public function call(object|string $handler, string $method, array $args = []): mixed
     {
-        $handlerInstance = is_string($handler) === true
-            ? $this->get(id: $handler)
-            : $handler;
+        $instance = is_string($handler) ? $this->get($handler) : $handler;
 
         try {
-
-            $reflectionMethod = new ReflectionMethod($handlerInstance, $method);
-
-        } catch (ReflectionException $e) {
-
-            throw new LogicException("Ошибка при анализе метода {$method} в классе {$handler}: " . $e->getMessage(), 0, $e);
+            $refMethod = new \ReflectionMethod($instance, $method);
+        } catch (\ReflectionException $e) {
+            throw new \LogicException(
+                "Cannot reflect {$method} on " . get_class($instance) . ": " . $e->getMessage(),
+                0,
+                $e
+            );
         }
 
-        $resolvedArgs = [];
+        $resolved = [];
 
-        $parameters = $reflectionMethod->getParameters();
+        foreach ($refMethod->getParameters() as $param) {
+            $name = $param->getName();
+            $type = $param->getType();
 
-        foreach ($parameters as $parameter) {
-            $paramName = $parameter->getName();
-
-            $paramType = $parameter->getType();
-
-            if (isset($args[$paramName]) === true) {
-                $resolvedArgs[] = $this->resolveArgument($args[$paramName], $paramType);
+            // 1) Если передали явно — используем
+            if (array_key_exists($name, $args)) {
+                $resolved[] = $this->resolveArgument($args[$name], $type);
                 continue;
             }
 
-            if ($paramType !== null && $paramType->isBuiltin() === false) {
-                $resolvedArgs[] = $this->getOrAutowire($paramType->getName());
-
+            // 2) UNION-типы (например, string|int) — подставляем «заглушку»
+            if ($type instanceof \ReflectionUnionType) {
+                // выберем первый из union, который является builtin
+                $stub = null;
+                foreach ($type->getTypes() as $sub) {
+                    if ($sub->isBuiltin()) {
+                        switch ($sub->getName()) {
+                            case 'string': $stub = ''; break 2;
+                            case 'int':    $stub = 0;  break 2;
+                            case 'float':  $stub = 0.0;break 2;
+                            case 'bool':   $stub = false;break 2;
+                        }
+                    }
+                }
+                // если ничего не нашли — null
+                $resolved[] = $stub;
                 continue;
             }
 
-            if ($parameter->isDefaultValueAvailable() === true) {
-                $resolvedArgs[] = $parameter->getDefaultValue();
-
+            // 3) Именованный класс — автоподставляем
+            if ($type instanceof \ReflectionNamedType && ! $type->isBuiltin()) {
+                $resolved[] = $this->getOrAutowire($type->getName());
                 continue;
             }
 
-            throw new ServiceResolutionException($handlerInstance::class, $paramName);
+            // 4) Значение по-умолчанию — используем
+            if ($param->isDefaultValueAvailable()) {
+                $resolved[] = $param->getDefaultValue();
+                continue;
+            }
+
+            // 5) Больше некуда — ошибка
+            throw new ServiceResolutionException(get_class($instance), $name);
         }
 
-        return $reflectionMethod->invokeArgs($handlerInstance, $resolvedArgs);
+        return $refMethod->invokeArgs($instance, $resolved);
     }
+
 
     /**
      * @inheritDoc
@@ -414,6 +433,10 @@ class DIContainer implements ContainerInterface
      */
     private function resolveArgument(mixed $argValue, ?ReflectionType $paramType): mixed
     {
+        if ($paramType instanceof ReflectionUnionType === true) {
+            return $argValue;
+        }
+
         if (is_string($argValue) === true && $paramType !== null && $paramType->isBuiltin() === true) {
             return $argValue;
         }

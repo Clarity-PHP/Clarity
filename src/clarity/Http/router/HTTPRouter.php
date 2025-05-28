@@ -176,22 +176,27 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
     public function findRoute(string $url, string $method): ?Route
     {
-        if (isset($this->routes[$method]) === false) {
+        if (! isset($this->routes[$method])) {
             return null;
         }
 
-        foreach ($this->routes[$method] as $route => $routeObj) {
-            $pattern = preg_replace_callback('/{(\w+)}/', function ($matches) {
-                return '(?P<' . $matches[1] . '>[^/]+)';
-            }, $route);
-
-            $pattern = "#^" . $pattern . "$#";
+        foreach ($this->routes[$method] as $routePattern => $routeObj) {
+            // Захватываем и {:id|integer}, и {id:type}, и {id:type=def}
+            $pattern = preg_replace_callback(
+                '/\{:?(\??\w+)(?:\|(\w+)|:(\w+))?(?:=[^}]+)?\}/',
+                function($m) {
+                    $name = ltrim($m[1], '?');
+                    return '(?P<' . $name . '>[^/]+)';
+                },
+                $routePattern
+            );
+            $pattern = "#^{$pattern}$#";
 
             if (preg_match($pattern, $url, $matches)) {
+                // Заполняем value из URL для mapParams
                 foreach ($routeObj->params as &$param) {
-                    $param['value'] = $matches[$param['name']] ?? $param['default'];
+                    $param['value'] = $matches[$param['name']] ?? null;
                 }
-
                 return $routeObj;
             }
         }
@@ -234,11 +239,13 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
 
         $route = $this->findRoute($path, $method);
 
-        $params = $this->mapParams($route->params);
+        $params = $this->mapParams($request->getQueryParams(), $route->params);
 
         $controller = $this->container->build($route->handler);
 
-        $controller->setContainer($this->container);
+        if (method_exists($controller, 'setContainer') === true) {
+            $controller->setContainer($this->container);
+        }
 
         $action = $route->action;
 
@@ -269,52 +276,94 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
      * @param string $route
      * @return array
      */
+    /**
+     * @param string $route
+     * @return array
+     */
     private function prepareParams(string $route): array
     {
-        preg_match_all('/{(\??\w+)(?:=(\w+))?}/', $route, $matches, PREG_SET_ORDER);
+        // Поддерживаем:
+        //  {id}, {id:type}, {:id|type}, {id:type=def}, {:id|type=def}
+        preg_match_all(
+            '/\{:?(\??\w+)(?:\|(\w+)|:(\w+))?(?:=([^}]+))?\}/',
+            $route,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         $params = [];
+        foreach ($matches as $m) {
+            // $m[1] — имя, возможно с '?'
+            $isOptional = str_starts_with($m[1], '?');
+            $name       = $isOptional ? substr($m[1], 1) : $m[1];
 
-        foreach ($matches as $match) {
+            // $m[2] если был {|type}, либо $m[3] если был {:name:type}
+            $type = $m[2] ?? $m[3] ?? null;
+            if ($type === 'integer') {
+                $type = 'int';
+            }
+
             $params[] = [
-                'name' => $match[0][1] !== '?' ? $match[1] : substr($match[1], 1),
-                'required' => $match[0][1] !== '?',
-                'default' => $match[2] ?? null,
+                'name'     => $name,
+                // для синтаксиса без '?' — true
+                'required' => ! $isOptional,
+                'type'     => $type,
+                'default'  => $m[4] ?? null,
+                // value заполняется в findRoute
             ];
         }
 
         return $params;
     }
 
+
     /**
      * @param array $params
      * @return array
      */
-    private function mapParams(array $params): array
+    /**
+     * @param array $queryParams
+     * @param array $routeParams
+     * @return array
+     */
+    private function mapParams(array $queryParams, array $routeParams): array
     {
         $result = [];
 
-        foreach ($params as $param) {
-            if (isset($param['value']) === true) {
-                $result[$param['name']] = $param['value'];
+        foreach ($routeParams as $param) {
+            $name = $param['name'];
+
+            // 1) если в findRoute поставили value — берём его
+            if (array_key_exists('value', $param) && $param['value'] !== null) {
+                $result[$name] = $param['value'];
                 continue;
             }
 
-            if (isset($param['default']) === true) {
-                $result[$param['name']] = $param['default'];
+            // 2) иначе — из query
+            if (array_key_exists($name, $queryParams)) {
+                $this->paramsValidation($queryParams[$name], $param['type']);
+                $result[$name] = $queryParams[$name];
                 continue;
             }
 
-            if ($param['required'] === false) {
-                $result[$param['name']] = null;
+            // 3) значение по-умолчанию
+            if ($param['default'] !== null) {
+                $result[$name] = $param['default'];
                 continue;
             }
 
-            throw new InvalidArgumentException("Обязательный параметр {$param['name']} не найден в запросе");
+            // 4) обязательный?
+            if ($param['required']) {
+                throw new InvalidArgumentException("Обязательный параметр {$name} не найден");
+            }
+
+            // 5) не обязателен — null
+            $result[$name] = null;
         }
 
         return $result;
     }
+
 
     /**
      * @param string $name
@@ -474,5 +523,37 @@ class HTTPRouter implements HTTPRouterInterface, MiddlewareAssignable
         }
 
         return $groupMiddlewares;
+    }
+
+    private function paramsValidation(string $param, string $type): mixed
+    {
+        if ($type === 'string') {
+            return true;
+        }
+
+        if ($type === 'int') {
+            return (bool)filter_var($param, FILTER_VALIDATE_INT) !== false || $param === '0' ?
+                true :
+                throw new InvalidArgumentException('Параметр должен быть целым числом');
+        }
+
+        if ($type === 'float') {
+            return (bool)filter_var($param, FILTER_VALIDATE_FLOAT) === true ?
+                true :
+                throw new InvalidArgumentException('Параметр должен обладать типом float');
+        }
+
+        if ($type === 'bool') {
+            return (bool)filter_var($param, FILTER_VALIDATE_BOOLEAN) === true ?
+                true :
+                throw new InvalidArgumentException('Параметр должен обладать типом bool');
+        }
+
+        return true;
+    }
+
+    public function addResource(string $name, string $controller, array $config = []): void
+    {
+        (new Resource($name, $controller, $config))->build($this);
     }
 }
