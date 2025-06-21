@@ -71,13 +71,13 @@ class Resource
             ],
             'patch' => [
                 'method' => 'PATCH',
-                'path' => "{:id|integer}",
+                'path' => "",
                 'action' => 'actionPatch',
                 'middleware' => [],
             ],
             'delete' => [
                 'method' => 'DELETE',
-                'path' => "{:id|integer}",
+                'path' => "",
                 'action' => 'actionDelete',
                 'middleware' => [],
             ],
