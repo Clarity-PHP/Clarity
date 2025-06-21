@@ -202,9 +202,16 @@ abstract class AbstractResourceController
     {
         $this->checkCallAvailability(ResourceActionTypesEnum::PATCH);
 
+        $data = array_merge(
+            $this->request->getQueryParams(),
+            $this->request->getParsedBody() ?: []
+        );
+
         $form = $this->formRequestFactory->create($this->forms[ResourceActionTypesEnum::PATCH->value]);
 
         $form->setSkipEmptyValues();
+
+        $form->setValues($data);
 
         $form->validate();
 
